@@ -16,11 +16,12 @@ output=$(
     {
         emit '{"id":7,"url":"https://kdrive.infomaniak.com/app/drive/2133736/files/42"}'
         emit '{"id":8,"url":"https://example.com/"}'
-    } | "$BIN" | tr -d '\000-\037'
+    } | "$BIN" | LC_ALL=C tr -d '\000-\037'
 )
 
-# Both replies must come back, in order, each carrying its own id.
-if [[ "$output" != *'"id":7'* || "$output" != *'"status":"notALink","id":8'* ]]; then
+# Both replies must come back, each carrying its own id. JSON key order is not guaranteed, so
+# match the pieces rather than a whole serialisation.
+if [[ "$output" != *'"id":7'* || "$output" != *'"id":8'* || "$output" != *'"notALink"'* ]]; then
     echo "unexpected host output: $output" >&2
     exit 1
 fi

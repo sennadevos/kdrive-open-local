@@ -6,25 +6,28 @@ on:
   pull_request:
 
 jobs:
-  test:
-    name: swift test (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        # Linux is where the resolver logic is developed; macOS is the only place the real
-        # target platform gets compiled at all, since nobody here has a Mac.
-        os: [ubuntu-latest, macos-latest]
+  test-linux:
+    name: swift test (linux)
+    runs-on: ubuntu-latest
+    # The official image rather than a setup action: it pins the toolchain exactly and matches
+    # what the podman command in the README uses.
+    container: docker.io/library/swift:6.4.1
     steps:
       - uses: actions/checkout@v7
-      - name: Install SQLite headers
-        if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libsqlite3-dev
-      - name: Install Swift
-        if: runner.os == 'Linux'
-        uses: swift-actions/setup-swift@v2
-        with:
-          swift-version: "6.4.1"
+      - run: apt-get update -qq && apt-get install -y -qq libsqlite3-dev
+      - run: swift build
+        working-directory: host
+      - run: swift test
+        working-directory: host
+      - name: Native messaging framing
+        run: tools/smoke-test-framing.sh host/.build/debug/kdrive-open-local
+
+  test-macos:
+    name: swift test (macos)
+    # The only place the real target platform gets compiled at all, since nobody here has a Mac.
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
       - run: swift build
         working-directory: host
       - run: swift test
