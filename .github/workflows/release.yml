@@ -26,3 +26,16 @@ jobs:
         with:
           name: kdrive-open-local-host-macos
           path: kdrive-open-local-host-macos.zip
+
+  extension:
+    name: Package the extension
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # Unsigned: Firefox will not install this as-is. It is here so that signing it through
+      # addons.mozilla.org later is a single `web-ext sign` away.
+      - run: npx --yes web-ext@10.8.0 build --source-dir extension --artifacts-dir dist
+      - uses: actions/upload-artifact@v7
+        with:
+          name: kdrive-open-local-extension-unsigned
+          path: dist/*.zip
