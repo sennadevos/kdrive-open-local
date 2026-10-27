@@ -1,0 +1,28 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  host:
+    name: Build the native messaging host
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build a universal binary
+        working-directory: host
+        run: |
+          swift build -c release --arch arm64 --arch x86_64
+          mkdir -p ../dist
+          cp "$(swift build -c release --arch arm64 --arch x86_64 --show-bin-path)/kdrive-open-local" ../dist/
+      - name: Assemble the archive
+        run: |
+          cp tools/install.sh tools/uninstall.sh dist/
+          chmod +x dist/install.sh dist/uninstall.sh dist/kdrive-open-local
+          (cd dist && zip -r ../kdrive-open-local-host-macos.zip .)
+      - uses: actions/upload-artifact@v7
+        with:
+          name: kdrive-open-local-host-macos
+          path: kdrive-open-local-host-macos.zip

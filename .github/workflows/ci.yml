@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: swift test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Linux is where the resolver logic is developed; macOS is the only place the real
+        # target platform gets compiled at all, since nobody here has a Mac.
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install SQLite headers
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libsqlite3-dev
+      - name: Install Swift
+        if: runner.os == 'Linux'
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: "6.4.1"
+      - run: swift build
+        working-directory: host
+      - run: swift test
+        working-directory: host
+      - name: Native messaging framing
+        run: tools/smoke-test-framing.sh host/.build/debug/kdrive-open-local
+
+  lint-extension:
+    name: web-ext lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: npx --yes web-ext@10.8.0 lint --source-dir extension

@@ -1,0 +1,31 @@
+{
+  "manifest_version": 2,
+  "name": "kDrive open local",
+  "version": "0.1.0",
+  "description": "Opens kDrive item links in the local kDrive sync folder instead of the web app.",
+  "homepage_url": "https://github.com/sennadevos/kdrive-open-local",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "kdrive-open-local@sennadevos.github.io",
+      "strict_min_version": "142.0",
+      "data_collection_permissions": { "required": ["none"] }
+    }
+  },
+  "permissions": [
+    "nativeMessaging",
+    "webRequest",
+    "webRequestBlocking",
+    "storage",
+    "tabs",
+    "*://kdrive.infomaniak.com/*",
+    "*://ksuite.infomaniak.com/*"
+  ],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  }
+}

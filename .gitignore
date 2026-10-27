@@ -1,0 +1,5 @@
+host/.build/
+dist/
+*.xpi
+*.zip
+node_modules/
